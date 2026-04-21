@@ -188,22 +188,74 @@ class DownloadEngine:
         
         # Progress hook
         if progress_callback:
+            # Biến nội bộ để theo dõi giai đoạn tải (Video hay Audio)
+            # stream_index: 1 = Video, 2 = Audio
+            state = {"stream_index": 1, "last_percent": 0}
+            
             def _hook(d):
                 if self._cancel_flag:
                     raise Exception("Download cancelled by user")
+                
                 if d['status'] == 'downloading':
                     try:
+                        # 1. Xác định giai đoạn (dựa trên filename)
+                        filename = d.get('filename', '')
+                        if state["stream_index"] == 1 and (".f" in filename or "temp" in filename.lower()):
+                            # Nếu đây là file audio (thường chứa codec audio trong tên file tạm) 
+                            # hoặc sau khi video kết thúc, chúng ta chuyển giai đoạn
+                            pass 
+                        
+                        # 2. Lấy % thô từ yt-dlp hoặc tính toán từ bytes
                         p_str = d.get('_percent_str', '0%').strip()
+                        # Xóa bỏ các ký tự escape ANSI nếu có
+                        p_str = re.sub(r'\x1b\[[0-9;]*[mGKF]', '', p_str)
+                        
                         found = re.search(r"(\d+\.?\d*)", p_str)
-                        if found:
-                            percent = float(found.group(1))
-                            speed = d.get('_speed_str', 'N/A').strip()
-                            eta = d.get('_eta_str', 'N/A').strip()
-                            progress_callback(percent, speed, eta)
+                        raw_percent = float(found.group(1)) if found else 0
+                        
+                        # 3. Logic gộp tiến trình (Nếu tải Video+Audio)
+                        # Giả định: Video chiếm 80% thanh progress, Audio chiếm 20%
+                        if mode == "MP4" and self.is_ffmpeg_ok:
+                            # yt-dlp thường tải video trước, sau đó tới audio
+                            # Chúng ta phát hiện chuyển stream khi % mới thấp hơn % cũ đáng kể
+                            if raw_percent < state["last_percent"] - 20: 
+                                state["stream_index"] = 2
+                            
+                            state["last_percent"] = raw_percent
+                            
+                            if state["stream_index"] == 1:
+                                final_percent = raw_percent * 0.8
+                                status_msg = "Đang tải Video..."
+                            else:
+                                final_percent = 80 + (raw_percent * 0.2)
+                                status_msg = "Đang tải Âm thanh..."
+                        else:
+                            final_percent = raw_percent
+                            status_msg = "Đang tải xuống..."
+                        
+                        # 4. Lấy thông số dung lượng (MB / MB)
+                        downloaded = d.get('downloaded_bytes', 0)
+                        total = d.get('total_bytes') or d.get('total_bytes_estimate', 0)
+                        
+                        size_info = f"{self.format_filesize(downloaded)}"
+                        if total > 0:
+                            size_info += f" / {self.format_filesize(total)}"
+                        
+                        speed = d.get('_speed_str', 'N/A').strip()
+                        speed = re.sub(r'\x1b\[[0-9;]*[mGKF]', '', speed)
+                        
+                        eta = d.get('_eta_str', 'N/A').strip()
+                        eta = re.sub(r'\x1b\[[0-9;]*[mGKF]', '', eta)
+                        
+                        progress_callback(final_percent, speed, eta, status_msg, size_info)
+                        
                     except Exception:
                         pass
                 elif d['status'] == 'finished':
-                    progress_callback(100, '', '')
+                    # Khi tải xong các stream, yt-dlp sẽ bắt đầu hậu xử lý (ghép file)
+                    if log_callback:
+                        log_callback("📦 Đang gộp Video và Audio bằng FFmpeg...")
+                    progress_callback(100, "Finalizing", "00:00", "Đang ghép file...", "")
             
             ydl_opts['progress_hooks'] = [_hook]
         

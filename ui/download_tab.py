@@ -188,13 +188,13 @@ class DownloadTab(ctk.CTkFrame):
         
         self.status_label = ctk.CTkLabel(
             self.progress_info, text="Sẵn sàng tải xuống",
-            font=Fonts.SMALL_BOLD, text_color=Colors.TEXT_SECONDARY, anchor="w"
+            font=Fonts.CONSOLE, text_color=Colors.TEXT_SECONDARY, anchor="w"
         )
         self.status_label.grid(row=0, column=0, sticky="w")
         
         self.speed_label = ctk.CTkLabel(
             self.progress_info, text="",
-            font=Fonts.SMALL, text_color=Colors.TEXT_MUTED, anchor="e"
+            font=Fonts.CONSOLE, text_color=Colors.SUCCESS, anchor="e"
         )
         self.speed_label.grid(row=0, column=1, sticky="e")
         
@@ -328,15 +328,24 @@ class DownloadTab(ctk.CTkFrame):
         color = color_map.get(status_type, Colors.TEXT_SECONDARY)
         self.status_label.configure(text=text, text_color=color)
     
-    def _update_progress(self, percent, speed, eta):
-        """Update progress bar and info."""
+    def _update_progress(self, percent, speed, eta, status_msg="Đang tải...", size_info=""):
+        """Update progress bar and info with terminal-like details."""
+        # 1. Cập nhật thanh progress
         self.after(0, lambda: self.progress_bar.set(percent / 100))
+        
+        # 2. Cập nhật nhãn trạng thái (ví dụ: [Đang tải Video] 45% (15 MB / 100 MB))
+        display_status = f"[{status_msg}] {int(percent)}%"
+        if size_info:
+            display_status += f"  ({size_info})"
+            
         self.after(0, lambda: self.status_label.configure(
-            text=f"Đang tải: {int(percent)}%", text_color=Colors.SECONDARY
+            text=display_status, text_color=Colors.SECONDARY
         ))
-        speed_text = f"{speed}" if speed and speed != 'N/A' else ""
+        
+        # 3. Cập nhật nhãn tốc độ và ETA
+        speed_text = f"⚡ {speed}" if speed and speed != 'N/A' else ""
         if eta and eta != 'N/A':
-            speed_text += f" • ETA: {eta}"
+            speed_text += f"  •  ⏱ {eta}"
         self.after(0, lambda: self.speed_label.configure(text=speed_text))
     
     def _start_download(self):
