@@ -5,6 +5,7 @@ Navigation sidebar với branding, mode selector, và quick settings.
 import customtkinter as ctk
 from tkinter import filedialog
 from .theme import Colors, Fonts, Spacing
+from .icons import Icons
 
 
 class Sidebar(ctk.CTkFrame):
@@ -29,15 +30,15 @@ class Sidebar(ctk.CTkFrame):
         self.logo_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.logo_frame.grid(row=row, column=0, padx=Spacing.PAD_XL, pady=(30, 5), sticky="ew")
         
-        self.logo_icon = ctk.CTkLabel(self.logo_frame, text="⚡", 
-                                       font=(Fonts.FAMILY, 32))
-        self.logo_icon.pack(anchor="center")
+        self.logo_icon = ctk.CTkLabel(self.logo_frame, text="", 
+                                       image=Icons.get("dhk_logo", size=48))
+        self.logo_icon.pack(anchor="center", pady=(0, 5))
         
-        self.logo_label = ctk.CTkLabel(self.logo_frame, text="TITANIUM",
+        self.logo_label = ctk.CTkLabel(self.logo_frame, text="DHK",
                                        font=Fonts.LOGO, text_color=Colors.PRIMARY)
         self.logo_label.pack(anchor="center")
         
-        self.subtitle = ctk.CTkLabel(self.logo_frame, text="Universal Downloader",
+        self.subtitle = ctk.CTkLabel(self.logo_frame, text="Downloader",
                                      font=Fonts.SMALL, text_color=Colors.TEXT_SECONDARY)
         self.subtitle.pack(anchor="center")
         
@@ -62,18 +63,21 @@ class Sidebar(ctk.CTkFrame):
         self.mode_frame.grid_columnconfigure(1, weight=1)
         
         self.mp4_btn = ctk.CTkButton(
-            self.mode_frame, text="🎬 MP4", height=42,
+            self.mode_frame, text=" MP4", height=42,
             font=Fonts.BUTTON, corner_radius=Spacing.CORNER_RADIUS_SM,
             fg_color=Colors.MP4_COLOR, hover_color=Colors.MP4_HOVER,
+            image=Icons.get("mp4", size=18), compound="left",
             command=lambda: self._set_mode("MP4")
         )
         self.mp4_btn.grid(row=0, column=0, padx=(0, 4), sticky="ew")
         
         self.mp3_btn = ctk.CTkButton(
-            self.mode_frame, text="🎵 MP3", height=42,
+            self.mode_frame, text=" MP3", height=42,
             font=Fonts.BUTTON, corner_radius=Spacing.CORNER_RADIUS_SM,
             fg_color=Colors.BG_CARD, hover_color=Colors.BG_CARD_HOVER,
             border_width=1, border_color=Colors.BORDER,
+            image=Icons.get("mp3", size=18), compound="left",
+            text_color=Colors.TEXT_PRIMARY,
             command=lambda: self._set_mode("MP3")
         )
         self.mp3_btn.grid(row=0, column=1, padx=(4, 0), sticky="ew")
@@ -165,11 +169,12 @@ class Sidebar(ctk.CTkFrame):
         
         # ===== COOKIE BUTTON =====
         self.cookie_btn = ctk.CTkButton(
-            self, text="🍪 Nạp Cookies", height=36,
+            self, text=" Nạp Cookies", height=36,
             font=Fonts.SMALL_BOLD, corner_radius=Spacing.CORNER_RADIUS_SM,
             fg_color="transparent", hover_color=Colors.SIDEBAR_HOVER,
             border_width=1, border_color=Colors.BORDER,
             text_color=Colors.TEXT_SECONDARY,
+            image=Icons.get("cookie", size=16), compound="left",
             command=self._select_cookie
         )
         self.cookie_btn.grid(row=12, column=0, padx=Spacing.PAD_XL, pady=(0, Spacing.PAD_XL), sticky="ew")
@@ -209,7 +214,7 @@ class Sidebar(ctk.CTkFrame):
             filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
         )
         if f:
-            self.cookie_btn.configure(text="🍪 Đã nạp cookies", text_color=Colors.SUCCESS)
+            self.cookie_btn.configure(text=" Đã nạp cookies", text_color=Colors.SUCCESS)
             if self.on_cookie_select:
                 self.on_cookie_select(f)
     

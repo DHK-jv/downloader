@@ -7,6 +7,7 @@ from tkinter import filedialog
 import threading
 import os
 from .theme import Colors, Fonts, Spacing
+from .icons import Icons
 
 
 class ConverterTab(ctk.CTkFrame):
@@ -26,7 +27,7 @@ class ConverterTab(ctk.CTkFrame):
         
         # ===== HEADER =====
         ctk.CTkLabel(
-            self, text="🔄 Chuyển Đổi Định Dạng",
+            self, text="Chuyển Đổi Định Dạng",
             font=Fonts.HEADING, text_color=Colors.TEXT_PRIMARY, anchor="w"
         ).grid(row=row, column=0, padx=Spacing.PAD_XL, 
                pady=(Spacing.PAD_XL, Spacing.PAD_SM), sticky="w")
@@ -48,7 +49,7 @@ class ConverterTab(ctk.CTkFrame):
                            pady=(0, Spacing.PAD_LG), sticky="ew")
             ctk.CTkLabel(
                 warn_frame, 
-                text="⚠️ FFmpeg không tìm thấy. Tính năng chuyển đổi cần FFmpeg để hoạt động.",
+                text="FFmpeg không tìm thấy. Tính năng chuyển đổi cần FFmpeg để hoạt động.",
                 font=Fonts.SMALL_BOLD, text_color=Colors.WARNING,
                 wraplength=500
             ).pack(padx=Spacing.PAD_MD, pady=Spacing.PAD_MD)
@@ -62,7 +63,7 @@ class ConverterTab(ctk.CTkFrame):
         self.input_card.grid_columnconfigure(0, weight=1)
         
         ctk.CTkLabel(
-            self.input_card, text="📄 File nguồn",
+            self.input_card, text="File nguồn",
             font=Fonts.BODY_BOLD, text_color=Colors.TEXT_PRIMARY, anchor="w"
         ).grid(row=0, column=0, padx=Spacing.PAD_MD, pady=(Spacing.PAD_MD, Spacing.PAD_SM), 
                sticky="w", columnspan=2)
@@ -78,9 +79,10 @@ class ConverterTab(ctk.CTkFrame):
                             pady=(0, Spacing.PAD_MD), sticky="ew")
         
         self.select_file_btn = ctk.CTkButton(
-            self.input_card, text="📁 Chọn", width=80, height=40,
+            self.input_card, text=" Chọn tệp", width=95, height=40,
             font=Fonts.SMALL_BOLD, corner_radius=Spacing.CORNER_RADIUS_SM,
             fg_color=Colors.PRIMARY, hover_color=Colors.PRIMARY_HOVER,
+            image=Icons.get("folder", size=16), compound="left",
             command=self._select_file
         )
         self.select_file_btn.grid(row=1, column=1, padx=(0, Spacing.PAD_MD), 
@@ -96,7 +98,7 @@ class ConverterTab(ctk.CTkFrame):
                              pady=Spacing.PAD_MD, sticky="ew")
         
         ctk.CTkLabel(
-            self.format_card, text="🎯 Định dạng đích",
+            self.format_card, text="Định dạng đích",
             font=Fonts.BODY_BOLD, text_color=Colors.TEXT_PRIMARY, anchor="w"
         ).pack(anchor="w", padx=Spacing.PAD_MD, pady=(Spacing.PAD_MD, Spacing.PAD_SM))
         
@@ -107,8 +109,8 @@ class ConverterTab(ctk.CTkFrame):
         self.format_var = ctk.StringVar(value="mp3")
         
         formats = [
-            ("🎵 MP3", "mp3"), ("🎬 MP4", "mp4"), ("🎵 WAV", "wav"),
-            ("🎬 MKV", "mkv"), ("🎵 FLAC", "flac"), ("🎬 AVI", "avi"),
+            ("MP3", "mp3"), ("MP4", "mp4"), ("WAV", "wav"),
+            ("MKV", "mkv"), ("FLAC", "flac"), ("AVI", "avi"),
         ]
         
         for i, (label, fmt) in enumerate(formats):
@@ -143,13 +145,15 @@ class ConverterTab(ctk.CTkFrame):
         
         # ===== CONVERT BUTTON =====
         state = "normal" if ffmpeg_ok else "disabled"
-        btn_text = "🔄 CHUYỂN ĐỔI NGAY" if ffmpeg_ok else "⚠️ Cần FFmpeg"
+        btn_text = " CHUYỂN ĐỔI NGAY" if ffmpeg_ok else " Cần FFmpeg"
+        btn_image = Icons.get("convert", size=18) if ffmpeg_ok else None
         
         self.convert_btn = ctk.CTkButton(
             self, text=btn_text, height=Spacing.BUTTON_HEIGHT,
             font=Fonts.BUTTON_LARGE, corner_radius=Spacing.CORNER_RADIUS,
             fg_color=Colors.WARNING, hover_color="#E09040",
             text_color=Colors.BG_DARKEST,
+            image=btn_image, compound="left",
             state=state,
             command=self._start_convert
         )

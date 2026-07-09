@@ -6,6 +6,8 @@ import customtkinter as ctk
 import os
 import subprocess
 from .theme import Colors, Fonts, Spacing
+from .icons import Icons
+from core.utils import format_filesize
 
 
 class HistoryTab(ctk.CTkFrame):
@@ -26,16 +28,17 @@ class HistoryTab(ctk.CTkFrame):
         self.header_frame.grid_columnconfigure(0, weight=1)
         
         ctk.CTkLabel(
-            self.header_frame, text="📋 Lịch Sử Tải Xuống",
+            self.header_frame, text="Lịch Sử Tải Xuống",
             font=Fonts.HEADING, text_color=Colors.TEXT_PRIMARY, anchor="w"
         ).grid(row=0, column=0, sticky="w")
         
         self.clear_btn = ctk.CTkButton(
-            self.header_frame, text="🗑 Xóa tất cả", width=110, height=32,
+            self.header_frame, text=" Xóa tất cả", width=110, height=32,
             font=Fonts.SMALL_BOLD, corner_radius=Spacing.CORNER_RADIUS_SM,
             fg_color=Colors.BG_CARD, hover_color=Colors.ERROR,
             border_width=1, border_color=Colors.BORDER,
             text_color=Colors.TEXT_SECONDARY,
+            image=Icons.get("delete", size=14), compound="left",
             command=self._clear_history
         )
         self.clear_btn.grid(row=0, column=1)
@@ -95,11 +98,12 @@ class HistoryTab(ctk.CTkFrame):
         
         # Icon
         is_mp3 = entry.get('quality', '').startswith('MP3')
-        icon = "🎵" if is_mp3 else "🎬"
+        icon_name = "mp3" if is_mp3 else "mp4"
         
-        ctk.CTkLabel(
-            item, text=icon, font=(Fonts.FAMILY, 18), width=30
-        ).grid(row=0, column=0, padx=(Spacing.PAD_SM, Spacing.PAD_SM), pady=Spacing.PAD_SM)
+        icon_label = ctk.CTkLabel(
+            item, text="", image=Icons.get(icon_name, size=24), width=30
+        )
+        icon_label.grid(row=0, column=0, padx=(Spacing.PAD_SM, Spacing.PAD_SM), pady=Spacing.PAD_SM)
         
         # Info
         info_frame = ctk.CTkFrame(item, fg_color="transparent")
@@ -116,7 +120,7 @@ class HistoryTab(ctk.CTkFrame):
         ).grid(row=0, column=0, sticky="w")
         
         quality = entry.get('quality', '')
-        filesize = DownloadEngine.format_filesize(entry.get('filesize', 0))
+        filesize = format_filesize(entry.get('filesize', 0))
         timestamp = entry.get('timestamp', '')[:10]
         
         ctk.CTkLabel(
@@ -128,9 +132,10 @@ class HistoryTab(ctk.CTkFrame):
         filepath = entry.get('filepath', '')
         if filepath and os.path.exists(os.path.dirname(filepath)):
             open_btn = ctk.CTkButton(
-                item, text="📂", width=32, height=32,
+                item, text="", width=32, height=32,
                 font=Fonts.BODY, corner_radius=6,
                 fg_color="transparent", hover_color=Colors.BG_CARD_HOVER,
+                image=Icons.get("folder", size=16),
                 command=lambda p=filepath: self._open_folder(p)
             )
             open_btn.grid(row=0, column=2, padx=Spacing.PAD_SM)

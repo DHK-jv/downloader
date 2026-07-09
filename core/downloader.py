@@ -9,6 +9,7 @@ import time
 import shutil
 import subprocess
 from datetime import datetime
+from .utils import format_filesize, format_duration
 
 
 class DownloadEngine:
@@ -132,6 +133,71 @@ class DownloadEngine:
                     'available_qualities': sorted(available_qualities, 
                         key=lambda x: self.QUALITY_MAP.get(x, 0), reverse=True),
                     'webpage_url': info.get('webpage_url', url),
+                }
+        except Exception as e:
+            return {'error': str(e)}
+            
+    def fetch_playlist_entries(self, url, cookie_path=None):
+        """
+        Lấy nhanh danh sách các video trong playlist bằng flat extraction.
+        Returns dict: {playlist_title, entries: [{title, url, duration, id, uploader}]}
+        """
+        opts = {
+            'quiet': True,
+            'no_warnings': True,
+            'extract_flat': 'in_playlist',
+            'skip_download': True,
+            'cookiefile': cookie_path if cookie_path else None,
+        }
+        # Thêm User-Agent cho non-YouTube
+        if url and "youtube" not in url.lower() and "youtu.be" not in url.lower():
+            opts['http_headers'] = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                if info is None:
+                    return None
+                
+                # Kiểm tra xem đây thực sự là một playlist không
+                if info.get('_type') != 'playlist':
+                    # Nếu là single video, giả lập thành playlist 1 item
+                    return {
+                        'playlist_title': info.get('title', 'Video Single'),
+                        'entries': [{
+                            'title': info.get('title', 'Unknown'),
+                            'url': info.get('webpage_url', url),
+                            'duration': info.get('duration', 0),
+                            'id': info.get('id', ''),
+                            'uploader': info.get('uploader', '')
+                        }]
+                    }
+                
+                entries = info.get('entries', [])
+                playlist_title = info.get('title', 'Playlist')
+                
+                parsed_entries = []
+                for entry in entries:
+                    if not entry:
+                        continue
+                    
+                    # URL của video
+                    video_url = entry.get('url') or entry.get('webpage_url')
+                    if not video_url and entry.get('id'):
+                        # Gắn kèm youtube domain nếu chỉ có ID
+                        video_url = f"https://www.youtube.com/watch?v={entry.get('id')}"
+                        
+                    parsed_entries.append({
+                        'title': entry.get('title', 'Unknown Title'),
+                        'url': video_url or url,
+                        'duration': entry.get('duration', 0),
+                        'id': entry.get('id', ''),
+                        'uploader': entry.get('uploader', '')
+                    })
+                return {
+                    'playlist_title': playlist_title,
+                    'entries': parsed_entries
                 }
         except Exception as e:
             return {'error': str(e)}
@@ -372,26 +438,10 @@ class DownloadEngine:
     
     @staticmethod
     def format_filesize(size_bytes):
-        """Format file size to human readable."""
-        if size_bytes == 0:
-            return "0 B"
-        units = ['B', 'KB', 'MB', 'GB']
-        i = 0
-        size = float(size_bytes)
-        while size >= 1024 and i < len(units) - 1:
-            size /= 1024
-            i += 1
-        return f"{size:.1f} {units[i]}"
+        """Định dạng số byte thành chuỗi đọc được."""
+        return format_filesize(size_bytes)
     
     @staticmethod
     def format_duration(seconds):
-        """Format seconds to HH:MM:SS."""
-        if not seconds:
-            return "N/A"
-        seconds = int(seconds)
-        h = seconds // 3600
-        m = (seconds % 3600) // 60
-        s = seconds % 60
-        if h > 0:
-            return f"{h}:{m:02d}:{s:02d}"
-        return f"{m}:{s:02d}"
+        """Định dạng số giây thành HH:MM:SS."""
+        return format_duration(seconds)

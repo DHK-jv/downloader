@@ -5,7 +5,7 @@ Quản lý cài đặt ứng dụng, lưu/load từ file JSON.
 import json
 import os
 
-CONFIG_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "titanium_config.json")
+CONFIG_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dhk_config.json")
 
 DEFAULT_CONFIG = {
     "theme": "Dark",

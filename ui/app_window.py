@@ -8,6 +8,8 @@ from .sidebar import Sidebar
 from .download_tab import DownloadTab
 from .history_tab import HistoryTab
 from .converter_tab import ConverterTab
+from .queue_tab import QueueTab
+from .icons import Icons
 
 
 class AppWindow(ctk.CTk):
@@ -22,7 +24,7 @@ class AppWindow(ctk.CTk):
         self._cookie_path = config.get("cookie_path", "")
         
         # --- Window Setup ---
-        self.title("Titanium Universal Downloader")
+        self.title("DHK Downloader")
         self.geometry("1080x720")
         self.minsize(700, 450)
         self.configure(fg_color=Colors.BG_DARK)
@@ -51,6 +53,15 @@ class AppWindow(ctk.CTk):
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_frame.grid_rowconfigure(0, weight=1)
         
+        # Initialize Queue Manager
+        from core.queue_manager import QueueManager
+        self.queue_manager = QueueManager(
+            ffmpeg_path=self.engine.ffmpeg_path,
+            max_concurrent=2,
+            on_task_success=self._on_queue_task_success,
+            on_task_log=self._log
+        )
+
         # Tab View
         self.tabview = ctk.CTkTabview(
             self.main_frame, 
@@ -66,13 +77,14 @@ class AppWindow(ctk.CTk):
         self.tabview.grid(row=0, column=0, sticky="nsew", padx=Spacing.PAD_MD, pady=Spacing.PAD_MD)
         
         # Create tabs
-        self.tab_download = self.tabview.add("⬇ Tải Xuống")
-        self.tab_history = self.tabview.add("📋 Lịch Sử")
-        self.tab_convert = self.tabview.add("🔄 Chuyển Đổi")
-        self.tab_log = self.tabview.add("📝 Nhật Ký")
+        self.tab_download = self.tabview.add("Tải Xuống")
+        self.tab_queue = self.tabview.add("Hàng Đợi")
+        self.tab_history = self.tabview.add("Lịch Sử")
+        self.tab_convert = self.tabview.add("Chuyển Đổi")
+        self.tab_log = self.tabview.add("Nhật Ký")
         
         # Configure tab grids
-        for tab in [self.tab_download, self.tab_history, self.tab_convert, self.tab_log]:
+        for tab in [self.tab_download, self.tab_queue, self.tab_history, self.tab_convert, self.tab_log]:
             tab.grid_columnconfigure(0, weight=1)
             tab.grid_rowconfigure(0, weight=1)
         
@@ -80,11 +92,19 @@ class AppWindow(ctk.CTk):
         self.download_tab = DownloadTab(
             self.tab_download,
             download_engine=self.engine,
+            queue_manager=self.queue_manager,
             config=self.config,
             get_sidebar_settings=self._get_sidebar_settings,
             log_callback=self._log
         )
         self.download_tab.grid(row=0, column=0, sticky="nsew")
+        
+        # --- Queue Tab ---
+        self.queue_tab = QueueTab(
+            self.tab_queue,
+            queue_manager=self.queue_manager
+        )
+        self.queue_tab.grid(row=0, column=0, sticky="nsew")
         
         # --- History Tab ---
         self.history_tab = HistoryTab(
@@ -120,10 +140,11 @@ class AppWindow(ctk.CTk):
         self.console.grid(row=0, column=0, sticky="nsew", padx=Spacing.PAD_MD, pady=Spacing.PAD_MD)
         
         self.clear_log_btn = ctk.CTkButton(
-            self.log_frame, text="🗑 Xóa log", width=100, height=30,
+            self.log_frame, text=" Xóa log", width=100, height=30,
             font=Fonts.SMALL, corner_radius=Spacing.CORNER_RADIUS_SM,
             fg_color=Colors.BG_CARD, hover_color=Colors.BG_CARD_HOVER,
             text_color=Colors.TEXT_SECONDARY,
+            image=Icons.get("delete", size=14), compound="left",
             command=self._clear_log
         )
         self.clear_log_btn.grid(row=1, column=0, padx=Spacing.PAD_MD, 
@@ -131,7 +152,7 @@ class AppWindow(ctk.CTk):
         
         # Welcome log
         self._log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        self._log("⚡ TITANIUM Universal Downloader")
+        self._log("⚡ DHK Downloader")
         self._log(f"   FFmpeg: {'✅ Hoạt động' if self.engine.is_ffmpeg_ok else '⚠️ Không tìm thấy'}")
         self._log("   Hỗ trợ: YouTube, Facebook, TikTok, Instagram, Twitter/X, SoundCloud...")
         self._log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
@@ -170,6 +191,12 @@ class AppWindow(ctk.CTk):
         if "Lịch Sử" in current:
             self.history_tab.refresh()
     
+    def _on_queue_task_success(self, result):
+        """Callback khi một task tải thành công trong hàng đợi."""
+        if self.config:
+            self.config.add_history(result)
+        self.after(0, self.history_tab.refresh)
+
     def _log(self, msg):
         """Write message to log console."""
         try:
