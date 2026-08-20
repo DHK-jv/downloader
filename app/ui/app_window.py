@@ -54,7 +54,7 @@ class AppWindow(ctk.CTk):
         self.main_frame.grid_rowconfigure(0, weight=1)
         
         # Initialize Queue Manager
-        from core.queue_manager import QueueManager
+        from app.core.queue_manager import QueueManager
         self.queue_manager = QueueManager(
             ffmpeg_path=self.engine.ffmpeg_path,
             max_concurrent=2,

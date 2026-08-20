@@ -1,0 +1,16 @@
+services:
+  downloader:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dhk-downloader:dev
+    environment:
+      DISPLAY: ${DISPLAY:-:0}
+      DHK_CONFIG_PATH: /workspace/config/dhk_config.json
+      DHK_OUTPUT_PATH: /workspace/output
+    volumes:
+      - ./config:/workspace/config
+      - ${OUTPUT_DIR:-./output}:/workspace/output
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    stdin_open: true
+    tty: true

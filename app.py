@@ -10,16 +10,10 @@ Cách chạy:
     hoặc
     .venv\\Scripts\\python.exe app.py
 """
-import sys
-import os
-
-# Đảm bảo import path đúng
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-from core.config import Config
-from core.downloader import DownloadEngine
-from core.converter import Converter
-from ui.app_window import AppWindow
+from app.core.config import Config
+from app.core.downloader import DownloadEngine
+from app.core.converter import Converter
+from app.ui.app_window import AppWindow
 
 
 def main():

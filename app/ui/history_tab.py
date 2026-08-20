@@ -7,7 +7,7 @@ import os
 import subprocess
 from .theme import Colors, Fonts, Spacing
 from .icons import Icons
-from core.utils import format_filesize
+from app.core.utils import format_filesize
 
 
 class HistoryTab(ctk.CTkFrame):
@@ -87,7 +87,7 @@ class HistoryTab(ctk.CTkFrame):
     
     def _create_history_item(self, index, entry):
         """Create a single history item card."""
-        from core.downloader import DownloadEngine
+        from app.core.downloader import DownloadEngine
         
         item = ctk.CTkFrame(
             self.scroll_frame, fg_color=Colors.BG_ELEVATED if index % 2 == 0 else "transparent",

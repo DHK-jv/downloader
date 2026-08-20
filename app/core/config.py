@@ -4,12 +4,14 @@ Quản lý cài đặt ứng dụng, lưu/load từ file JSON.
 """
 import json
 import os
+from pathlib import Path
 
-CONFIG_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "dhk_config.json")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+CONFIG_FILE = Path(os.environ.get("DHK_CONFIG_PATH", PROJECT_ROOT / "config" / "dhk_config.json"))
 
 DEFAULT_CONFIG = {
     "theme": "Dark",
-    "output_path": os.path.join(os.path.expanduser("~"), "Downloads"),
+    "output_path": os.environ.get("DHK_OUTPUT_PATH", os.path.join(os.path.expanduser("~"), "Downloads")),
     "cookie_path": "",
     "last_video_quality": "1080p",
     "last_audio_bitrate": "320k",
@@ -31,11 +33,14 @@ class Config:
     def _load(self):
         """Load config from JSON file."""
         try:
-            if os.path.exists(CONFIG_FILE):
-                with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+            if CONFIG_FILE.exists():
+                with CONFIG_FILE.open("r", encoding="utf-8") as f:
                     saved = json.load(f)
                 # Merge with defaults (keep new keys)
                 self._data = {**DEFAULT_CONFIG, **saved}
+                # Docker/native environment variables must override paths saved by another machine.
+                if os.environ.get("DHK_OUTPUT_PATH"):
+                    self._data["output_path"] = os.environ["DHK_OUTPUT_PATH"]
             else:
                 self._data = DEFAULT_CONFIG.copy()
         except (json.JSONDecodeError, IOError):
@@ -44,7 +49,8 @@ class Config:
     def save(self):
         """Save config to JSON file."""
         try:
-            with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+            with CONFIG_FILE.open("w", encoding="utf-8") as f:
                 json.dump(self._data, f, indent=2, ensure_ascii=False)
         except IOError as e:
             print(f"[Config] Save error: {e}")

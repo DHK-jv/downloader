@@ -1,0 +1,28 @@
+{
+  "theme": "Dark",
+  "output_path": "/media",
+  "cookie_path": "",
+  "last_video_quality": "1080p",
+  "last_audio_bitrate": "320k",
+  "last_mode": "MP4",
+  "download_history": [
+    {
+      "success": true,
+      "title": "[FULL] Khóa Học JavaScript Cơ Bản Từ A tới Z cho Beginner | Học JavaScript Từ Số 0 với Hỏi Dân IT",
+      "filename": "[FULL] Khóa Học JavaScript Cơ Bản Từ A tới Z cho Beginner ｜ Học JavaScript Từ Số 0 với Hỏi Dân IT.mp4",
+      "filepath": "/media/[FULL] Khóa Học JavaScript Cơ Bản Từ A tới Z cho Beginner ｜ Học JavaScript Từ Số 0 với Hỏi Dân IT.mp4",
+      "filesize": 1579235187,
+      "quality": "1080p",
+      "timestamp": "2026-07-23T17:03:06.192679"
+    },
+    {
+      "success": true,
+      "title": "[FULL] Khóa Học JavaScript Cơ Bản Từ A tới Z cho Beginner | Học JavaScript Từ Số 0 với Hỏi Dân IT",
+      "filename": "[FULL] Khóa Học JavaScript Cơ Bản Từ A tới Z cho Beginner ｜ Học JavaScript Từ Số 0 với Hỏi Dân IT.mp4",
+      "filepath": "/home/[FULL] Khóa Học JavaScript Cơ Bản Từ A tới Z cho Beginner ｜ Học JavaScript Từ Số 0 với Hỏi Dân IT.mp4",
+      "filesize": 1579235187,
+      "quality": "1080p",
+      "timestamp": "2026-07-23T16:49:38.681242"
+    }
+  ]
+}

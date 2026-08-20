@@ -5,7 +5,7 @@ Quản lý hàng đợi tải xuống, hỗ trợ tải song song đa luồng s�
 import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor
-from core.downloader import DownloadEngine
+from .downloader import DownloadEngine
 
 
 class DownloadTask:

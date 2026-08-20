@@ -11,7 +11,7 @@ from io import BytesIO
 from PIL import Image
 from .theme import Colors, Fonts, Spacing
 from .icons import Icons
-from core.utils import format_duration
+from app.core.utils import format_duration
 
 
 class DownloadTab(ctk.CTkFrame):
